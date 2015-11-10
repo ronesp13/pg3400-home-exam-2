@@ -2,7 +2,7 @@
 
 #ifndef QUEUE
 #define QUEUE "queue.h"
-#include "queue.h"
+#include QUEUE
 #endif
 
 void enqueue(Queue *queue, char *key) {

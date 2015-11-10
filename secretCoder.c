@@ -4,16 +4,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
+
+#include "secretCoder.h"
 
 #ifndef UTIL
 #define UTIL "util.h"
 #include UTIL
 #endif
-#include "secretCoder.h"
+
+#ifndef QUEUE
+#define QUEUE "queue.h"
+#include QUEUE
+#endif
 
 #define SUCCESS 200
 #define FILE_NOT_FOUND 404
 #define DISTANCE_NOT_SATISFIED 500
+
+#define DICTIONARY_PATH "/usr/share/dict/words"
+#define SONG_LIBRARY_PATH "songLibrary/"
 
 char *preprocessKey(const char *inputMessageFile, int *status) {
     FILE *file = NULL;
@@ -42,6 +52,70 @@ char *preprocessKey(const char *inputMessageFile, int *status) {
     key[count] = '\0';
     fclose(file);
     return key;
+}
+
+char** getDictionary(int *size) {
+    FILE* file = fopen(DICTIONARY_PATH, "r");
+    int wordCount = 0;
+    char **array = (char**) allocate(sizeof(char*));
+    char buffer[25];
+    int reallocValue = 1;
+
+    while (fgets(buffer, 25, file) != NULL) {
+        buffer[strlen(buffer) - 1] = '\0';
+        if (wordCount == reallocValue) {
+            reallocValue *= 2;
+            array = (char**) reallocate(array, sizeof(char*) * reallocValue);
+        }
+        array[wordCount] = (char*) allocate(sizeof(char) * strlen(buffer) + 1);
+        array[wordCount] = strncpy(array[wordCount], buffer, strlen(buffer) + 1);
+        wordCount++;
+    }
+    array = (char**) reallocate(array, sizeof(char*) * wordCount);
+    *size = wordCount;
+    fclose(file);
+    return array;
+}
+
+Queue* getKeys() {
+    Queue *queue = (Queue*) allocate(sizeof(Queue));
+    queue->first = NULL;
+    queue->last = NULL;
+    DIR *directory = opendir(SONG_LIBRARY_PATH);
+    struct dirent *entry = NULL;
+    char filename[42] = {};
+
+    if (directory) {
+        while ((entry = readdir(directory)) != NULL) {
+            if (entry->d_name[0] == '.') continue;
+            sprintf(filename, "%s%s", SONG_LIBRARY_PATH, entry->d_name);
+            char* key = preprocessKey(filename, 0);
+            enqueue(queue, key);
+        }
+    }
+    closedir(directory);
+    return queue;
+}
+
+bool binarySearch(char* search, char** dictionary, int dictionarySize) {
+    int first = 0;
+    int last = dictionarySize - 1;
+    int middle = (first + last) / 2;
+
+    while (first <= last) {
+        if (strcasecmp(dictionary[middle], search) < 0) {
+            first = middle + 1;
+        } else if (strcasecmp(dictionary[middle], search) == 0) {
+            return true;
+        } else {
+            last = middle - 1;
+        }
+        middle = (first + last) / 2;
+    }
+    if (first > last) {
+        return false;
+    }
+    return false;
 }
 
 bool isLetterInKey(char input, char lowerCasedInput, char keyValue, int index, int distance, int *lowerLimit, int *upperLimit, char **encodedMessage, int *encodedMessageSize) {
@@ -160,5 +234,75 @@ char *decode(const char *inputCodeFile, const char *keyFile, int *status) {
 }
 
 char *hack(const char *inputCodeFile, int *status) {
+    int dictionarySize = 0;
+    char **dictionary = getDictionary(&dictionarySize);
+
+    Queue *keys = getKeys();
+    int position = 0;
+    char input = '\0';
+    int *positions = NULL;
+    char *word = NULL;
+    int wordLength = 0;
+
+    FILE *file = fopen(inputCodeFile, "r");
+    if (file == NULL) {
+        *status = FILE_NOT_FOUND;
+        return NULL;
+    }
+    while (true) {
+
+        while (fscanf(file, "[%d]", &position) == 1) {
+            if (wordLength == 0) {
+                positions = (int*) allocate(sizeof(int));
+            } else {
+                positions = (int*) reallocate(positions, sizeof(int) * (wordLength + 1));
+            }
+            positions[wordLength] = position;
+            wordLength++;
+        }
+
+        if (wordLength != 0) {
+            Queue possibleKeys = { NULL, NULL};
+            while (keys->first != NULL) {
+                char *key = dequeue(keys);
+                word = (char*) allocate(sizeof(char) * (wordLength + 1));
+                for (int i = 0; i < wordLength; i++) {
+                    int index = positions[i] < 0 ? positions[i] * -1 : positions[i];
+                    word[i] = positions[i] < 0 ? toupper(key[index - 1]) : key[index - 1];
+                }
+                word[wordLength] = '\0';
+                bool result = binarySearch(word, dictionary, dictionarySize);
+                if (result) {
+                    enqueue(&possibleKeys, key);
+                } else {
+                    free(key);
+                }
+                free(word);
+                word = NULL;
+            }
+            *keys = possibleKeys;
+            free(positions);
+            positions = NULL;
+            wordLength = 0;
+        }
+        if (fscanf(file, "%c", &input) == EOF) {
+            break;
+        }
+    }
+    fclose(file);
+
+    while (keys->first != NULL) {
+        char *key = dequeue(keys);
+        char *encodedMessage = getDecodedMessage(inputCodeFile, key, status);
+        printf("Hacked the message %s\n", encodedMessage);
+        free(key);
+        free(encodedMessage);
+    }
+
+    for (int i = 0; i < dictionarySize; i++) {
+        free(dictionary[i]);
+    }
+    free(dictionary);
+    free(keys);
     return NULL;
 }

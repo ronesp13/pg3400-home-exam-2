@@ -5,6 +5,7 @@
 
 int main(int argc, char **argv) {
     int status = 0;
-    encode("inputMessageFiles/hello.txt", "songLibrary/sweetChildGR.txt", &status, 50);
-    decode("inputCodeFiles/hello_enc.txt", "songLibrary/sweetChildGR.txt", &status);
+//    encode("inputMessageFiles/hello.txt", "songLibrary/sweetChildGR.txt", &status, 50);
+//    decode("inputCodeFiles/hello_enc.txt", "songLibrary/sweetChildGR.txt", &status);
+    hack("inputCodeFiles/hello_enc.txt", &status);
 }
