@@ -13,6 +13,7 @@
 
 #define SUCCESS 200
 #define FILE_NOT_FOUND 404
+#define DISTANCE_NOT_SATISFIED 500
 
 char *preprocessKey(const char *inputMessageFile, int *status) {
     FILE *file = NULL;
@@ -43,14 +44,17 @@ char *preprocessKey(const char *inputMessageFile, int *status) {
     return key;
 }
 
-bool isLetterInKey(const char *key, char input, char keyValue, int index, int distance, int *lowerLimit, int *upperLimit) {
-    if (input == key[index]) {
+bool isLetterInKey(char input, char lowerCasedInput, char keyValue, int index, int distance, int *lowerLimit, int *upperLimit, char **encodedMessage, int *encodedMessageSize) {
+    if (lowerCasedInput == keyValue) {
         char buffer[10] = {};
         int position = index + 1;
-        position = isupper(input) ? -position : position;
+        position = isupper(input) ? position * -1 : position;
         *lowerLimit = index - distance;
         *upperLimit = index + distance;
         int size = sprintf(buffer, "[%d]", position);
+        *encodedMessage = (char*) reallocate(*encodedMessage, sizeof(char) * (*encodedMessageSize + size + 1));
+        *encodedMessageSize += size;
+        *encodedMessage = strncat(*encodedMessage, buffer, size);
         return true;
     }
     return false;
@@ -59,7 +63,6 @@ bool isLetterInKey(const char *key, char input, char keyValue, int index, int di
 char *getEncodedMessage(const char *inputMessageFile, const char* key, int *status, int distance) {
     FILE *file = fopen(inputMessageFile, "r");
     char input;
-    char buffer[10] = {};
     size_t keySize = strlen(key);
     int lowerLimit = 0;
     int upperLimit = 0;
@@ -70,46 +73,31 @@ char *getEncodedMessage(const char *inputMessageFile, const char* key, int *stat
         if (isalpha(input)) {
             char lowerCasedInput = tolower(input);
             bool found = false;
+
             for (int i = lowerLimit; i >= 0; i--) {
-                found = isLetterInKey(key, lowerCasedInput, key[i], i, distance, &lowerLimit, &upperLimit);
-                if (lowerCasedInput == key[i]) {
-                    int position = i + 1;
-//                    lowerLimit = i - distance;
-//                    upperLimit = i + distance;
-//                    found = true;
-                    position = isupper(input) ? -position : position;
-                    int size = sprintf(buffer, "[%d]", position);
-                    encodedMessage = realloc(encodedMessage, sizeof(char) * (encodedMessageSize + size + 1));
-                    encodedMessageSize += size;
-                    encodedMessage = strncat(encodedMessage, buffer, size);
+                found = isLetterInKey(input, lowerCasedInput, key[i], i, distance, &lowerLimit, &upperLimit, &encodedMessage, &encodedMessageSize);
+                if (found) {
                     break;
                 }
             }
+
             if (found) continue;
 
             for (int i = upperLimit; i < keySize; i++) {
-                if (lowerCasedInput == key[i]) {
-                    int position = i + 1;
-                    lowerLimit = i - distance;
-                    upperLimit = i + distance;
-                    found = true;
-                    position = isupper(input) ? -position : position;
-                    int size = sprintf(buffer, "[%d]", position);
-                    encodedMessage = realloc(encodedMessage, sizeof(char) * (encodedMessageSize + size + 1));
-                    encodedMessageSize += size;
-                    encodedMessage = strncat(encodedMessage, buffer, size);
+                found = isLetterInKey(input, lowerCasedInput, key[i], i, distance, &lowerLimit, &upperLimit, &encodedMessage, &encodedMessageSize);
+                if (found) {
                     break;
                 }
             }
             if (!found) {
-                printf("Unable to satisfy d=%d. Program terminating.", distance);
-                exit(1);
+                *status = DISTANCE_NOT_SATISFIED;
+                free(encodedMessage);
+                return NULL;
             }
         } else {
-            encodedMessage = realloc(encodedMessage, sizeof(char) * (encodedMessageSize + 2));
+            encodedMessage = reallocate(encodedMessage, sizeof(char) * (encodedMessageSize + 2));
             encodedMessageSize++;
-            encodedMessage[encodedMessageSize - 1] = input;
-            encodedMessage[encodedMessageSize] = '\0';
+            encodedMessage = strncat(encodedMessage, &input, sizeof(char));
         }
     }
 
