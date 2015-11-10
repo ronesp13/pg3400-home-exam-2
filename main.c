@@ -4,5 +4,7 @@
 #include "secretCoder.h"
 
 int main(int argc, char **argv) {
-    encode("inputMessageFiles/hello.txt", "songLibrary/sweetChildGR.txt", NULL, 50);
+    int status = 0;
+    encode("inputMessageFiles/hello.txt", "songLibrary/sweetChildGR.txt", &status, 50);
+    decode("inputCodeFiles/hello_enc.txt", "songLibrary/sweetChildGR.txt", &status);
 }

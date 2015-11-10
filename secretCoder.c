@@ -100,7 +100,7 @@ char *getEncodedMessage(const char *inputMessageFile, const char* key, int *stat
             encodedMessage = strncat(encodedMessage, &input, sizeof(char));
         }
     }
-
+    *status = SUCCESS;
     fclose(file);
     return encodedMessage;
 }
@@ -108,13 +108,54 @@ char *getEncodedMessage(const char *inputMessageFile, const char* key, int *stat
 char *encode(const char *inputMessageFile, const char *keyFile, int *status, int distance) {
     char *key = preprocessKey(keyFile, status);
     char *encoded = getEncodedMessage(inputMessageFile, key, status, distance);
-    printf("%s", encoded);
-    free(encoded);
+    printf("%s\n", encoded);
     free(key);
+    free(encoded);
     return NULL;
 }
 
+char *getDecodedMessage(const char *inputCodeFile, const char *key, int *status) {
+    char *decodedMessage = allocate(sizeof(char));
+    char input;
+    int position;
+    int reallocValue = 1;
+    int count = 0;
+    FILE *file = fopen(inputCodeFile, "r");
+    if (file == NULL) {
+        *status = FILE_NOT_FOUND;
+        return NULL;
+    }
+
+    while (true) {
+        if (count == reallocValue) {
+            reallocValue *= 2;
+            decodedMessage = reallocate(decodedMessage, sizeof(char) * reallocValue);
+        }
+        int readStatus = fscanf(file, "[%d]", &position);
+        if (readStatus == 1) {
+            int index = position < 0 ? position * -1 : position;
+            char value = key[index - 1];
+            input = position < 0 ? toupper(value) : value;
+        } else if (readStatus == EOF) {
+            break;
+        } else {
+            fscanf(file, "%c", &input);
+        }
+        decodedMessage[count] = input;
+        count++;
+    }
+    decodedMessage = (char*) reallocate(decodedMessage, sizeof(char) * (count + 1));
+    decodedMessage[count] = '\0';
+    fclose(file);
+    return decodedMessage;
+}
+
 char *decode(const char *inputCodeFile, const char *keyFile, int *status) {
+    char *key = preprocessKey(keyFile, status);
+    char *decodedMessage = getDecodedMessage(inputCodeFile, key, status);
+    free(key);
+    printf("%s\n", decodedMessage);
+    free(decodedMessage);
     return NULL;
 }
 
