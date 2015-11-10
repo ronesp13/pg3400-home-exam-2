@@ -43,9 +43,85 @@ char *preprocessKey(const char *inputMessageFile, int *status) {
     return key;
 }
 
+bool isLetterInKey(const char *key, char input, char keyValue, int index, int distance, int *lowerLimit, int *upperLimit) {
+    if (input == key[index]) {
+        char buffer[10] = {};
+        int position = index + 1;
+        position = isupper(input) ? -position : position;
+        *lowerLimit = index - distance;
+        *upperLimit = index + distance;
+        int size = sprintf(buffer, "[%d]", position);
+        return true;
+    }
+    return false;
+}
+
+char *getEncodedMessage(const char *inputMessageFile, const char* key, int *status, int distance) {
+    FILE *file = fopen(inputMessageFile, "r");
+    char input;
+    char buffer[10] = {};
+    size_t keySize = strlen(key);
+    int lowerLimit = 0;
+    int upperLimit = 0;
+    char *encodedMessage = calloc(1, sizeof(char));
+    int encodedMessageSize = 0;
+
+    while ((input = fgetc(file)) != EOF) {
+        if (isalpha(input)) {
+            char lowerCasedInput = tolower(input);
+            bool found = false;
+            for (int i = lowerLimit; i >= 0; i--) {
+                found = isLetterInKey(key, lowerCasedInput, key[i], i, distance, &lowerLimit, &upperLimit);
+                if (lowerCasedInput == key[i]) {
+                    int position = i + 1;
+//                    lowerLimit = i - distance;
+//                    upperLimit = i + distance;
+//                    found = true;
+                    position = isupper(input) ? -position : position;
+                    int size = sprintf(buffer, "[%d]", position);
+                    encodedMessage = realloc(encodedMessage, sizeof(char) * (encodedMessageSize + size + 1));
+                    encodedMessageSize += size;
+                    encodedMessage = strncat(encodedMessage, buffer, size);
+                    break;
+                }
+            }
+            if (found) continue;
+
+            for (int i = upperLimit; i < keySize; i++) {
+                if (lowerCasedInput == key[i]) {
+                    int position = i + 1;
+                    lowerLimit = i - distance;
+                    upperLimit = i + distance;
+                    found = true;
+                    position = isupper(input) ? -position : position;
+                    int size = sprintf(buffer, "[%d]", position);
+                    encodedMessage = realloc(encodedMessage, sizeof(char) * (encodedMessageSize + size + 1));
+                    encodedMessageSize += size;
+                    encodedMessage = strncat(encodedMessage, buffer, size);
+                    break;
+                }
+            }
+            if (!found) {
+                printf("Unable to satisfy d=%d. Program terminating.", distance);
+                exit(1);
+            }
+        } else {
+            encodedMessage = realloc(encodedMessage, sizeof(char) * (encodedMessageSize + 2));
+            encodedMessageSize++;
+            encodedMessage[encodedMessageSize - 1] = input;
+            encodedMessage[encodedMessageSize] = '\0';
+        }
+    }
+
+    fclose(file);
+    return encodedMessage;
+}
+
 char *encode(const char *inputMessageFile, const char *keyFile, int *status, int distance) {
     char *key = preprocessKey(keyFile, status);
-
+    char *encoded = getEncodedMessage(inputMessageFile, key, status, distance);
+    printf("%s", encoded);
+    free(encoded);
     free(key);
     return NULL;
 }
