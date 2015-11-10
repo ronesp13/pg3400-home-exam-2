@@ -5,46 +5,46 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef UTIL
+#define UTIL "util.h"
+#include UTIL
+#endif
 #include "secretCoder.h"
 
-char *preprocessKey(const char *inputMessageFile) {
+#define SUCCESS 200
+#define FILE_NOT_FOUND 404
+
+char *preprocessKey(const char *inputMessageFile, int *status) {
     FILE *file = NULL;
-    char *key = NULL;
+    char *key = (char*) allocate(sizeof(char));
     int reallocValue = 1;
     int count = 0;
     char input;
-    if ((file = fopen(inputMessageFile, "r")) == NULL) {
-        printf("Could not open file. Program terminating.\n");
-        exit(-1);
+
+    file = fopen(inputMessageFile, "r");
+    if (file == NULL) {
+        *status = FILE_NOT_FOUND;
+        return NULL;
     }
-    if ((key = (char*) malloc(sizeof(char))) == NULL ) {
-        printf("Could not allocate memory. Program terminating.\n");
-        exit(-1);
-    }
+
     while ((input = (char) fgetc(file)) != EOF) {
         if (reallocValue == count) {
             reallocValue *= 2;
-            if ((key = (char*) realloc(key, sizeof(char) * reallocValue)) == NULL) {
-                printf("Could not allocate memory. Program terminating.\n");
-                exit(-1);
-            }
+            key = (char*) reallocate(key, sizeof(char) * reallocValue);
         }
         if (isalpha(input)) {
             key[count] = isupper(input) ? (char) tolower(input) : input;
             count++;
         }
     }
-    if ((key = (char*) realloc(key, sizeof(char) * (count + 1))) == NULL) {
-        printf("Could not allocate memory. Program terminating.\n");
-        exit(-1);
-    }
+    key = reallocate(key, sizeof(char) * (count + 1));
     key[count] = '\0';
     fclose(file);
     return key;
 }
 
 char *encode(const char *inputMessageFile, const char *keyFile, int *status, int distance) {
-    char *key = preprocessKey(keyFile);
+    char *key = preprocessKey(keyFile, status);
 
     free(key);
     return NULL;
