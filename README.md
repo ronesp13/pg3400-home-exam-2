@@ -39,7 +39,7 @@ All output from decoding will be stored in a file name `/output/encodedMessageFi
 #### Hacking
 Hack an encoded file by running the command:
 ```sh
-$ ./westergate -hack encodedMessageFile
+$ ./westergate -hax encodedMessageFile
 ```
 
 All output from hacking will be stored in a file named `output/encodedMessageFile.hax.txt`
