@@ -1,7 +1,7 @@
 CC = gcc
 FLAGS = -Wall -std=c11
 PARANOIA = -Wall -Werror -Wextra -std=c11
-TARGET = program
+TARGET = westergate
 
 all: $(TARGET)
 

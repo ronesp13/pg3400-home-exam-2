@@ -125,6 +125,6 @@ sftp-config.json
 *.pdf
 *.doc
 *.docx
-program
+westergate
 *.o
 *.test.c
