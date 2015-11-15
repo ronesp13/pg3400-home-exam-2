@@ -48,7 +48,7 @@ $ ./westergate -hax encodedMessageFile.txt
 ```
 
 ### About the solution
-When "hacking" encoded files I am assuming that all the words in the hidden message must be present in the `/usr/share/dict/words` file.
+When "hacking" encoded files we're making the assumption that all the words in the hidden message must be present in the `/usr/share/dict/words` file.
 With this assumption even the smallest typo might result in a valid key being rejected. A possible solution might be to, for each key, 
 keep track of a percentage of how many words matches with this key. If a key generates 80% or more correct words then there's
 a reasonable chance that this key is valid.
