@@ -52,6 +52,10 @@ int main(int argc, char **argv) {
     } else if (argc == 3 && strcmp(argv[1], "-hax") == 0) {
         int size = 0;
         hackedMessages = hack(argv[2], &status, &size);
+        if (size == 0) {
+            printf("No keys produced a valid result.\n");
+            return 0;
+        }
         for (int i = 0; i < size; i++) {
             printf("Probable message #%d: %s\n\n", i + 1, hackedMessages[i]);
             free(hackedMessages[i]);
