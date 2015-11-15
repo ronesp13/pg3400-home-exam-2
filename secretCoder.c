@@ -137,7 +137,7 @@ char *getEncodedMessage(const char *inputMessageFile, const char* key, int *stat
     }
 
     char input;
-    size_t keySize = strlen(key);
+    int keySize = (int) strlen(key);
     int lowerLimit = 0;
     int upperLimit = 0;
     char *encodedMessage = calloc(1, sizeof(char));
