@@ -18,5 +18,9 @@ util.o: util.c
 	$(CC) $(FLAGS) -c -o util.o util.c
 paranoia:
 	$(CC) $(PARANOIA) -o $(TARGET) util.c queue.c secretCoder.c main.c
+lib: secretCoder.o queue.o util.o
+	ar rcs libsecret.a util.o queue.o secretCoder.o
+libexe:
+	$(CC) -L. main.c -o $(TARGET) -lsecret
 clean:
 	$(RM) $(TARGET) *.o

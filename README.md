@@ -9,6 +9,19 @@ To compile the program use the `Makefile` functionality by running the following
 $ make
 ```
 
+This will produce the executable `westergate`.
+
+### Library
+To create the library, run the command:
+```sh
+$ make lib
+```
+
+To compile a executable using the lib, run the command:
+```sh
+$ make libexe
+```
+
 ### Usage
 The program is designed to be a CLI program.
 It is assumed that all the keyfiles are located in the folder `songLibrary`.
