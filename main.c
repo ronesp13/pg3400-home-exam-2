@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "secretCoder.h"
 
@@ -16,7 +18,18 @@ void printHelp() {
 }
 
 void writeOutput(char *output, int status) {
-
+    if (status == SUCCESS) {
+//        writeEncodedFile(output);
+        printf("%s", output);
+    } else if (status == FILE_NOT_FOUND) {
+        printf("An error occurred while reading a file.\n");
+    } else if (status == INPUT_FILE_NOT_FOUND) {
+        printf("Could not open the specified input file.\n");
+    } else if (status == KEY_FILE_NOT_FOUND) {
+        printf("Could not open the specified key file.\n");
+    } else if (status == DISTANCE_NOT_SATISFIED) {
+        printf("Could not satisfy the distance value.\n");
+    }
 }
 
 int main(int argc, char **argv) {

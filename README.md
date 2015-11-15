@@ -14,16 +14,22 @@ The program is designed to be a CLI program.
 
 It is assumed that all the keyfiles are located in the folder `songLibrary`.
 
+By default the program writes output to the terminal.
+If you want to store the output to a file, use the > operator.
+```sh
+$ ./westergate -enc myMessageFile.txt songLibrary/keyFile.txt > myoutputfile.txt
+```
+
 #### Encoding
 Encode a messagefile by running the command:
 ```sh
-$ ./westergate -enc messageFile keyFile
+$ ./westergate -enc messageFile songLibrary/keyFile
 ```
 The above code will result in an encoding that is vulnerable to frequency analysis, therefore, if you want
 a more secure encoding, specify a `d` value. In the example below 25 is given as an example, you can input your own value. In some cases a file can not be encrypted with a `d` value.
 
 ```sh
-$ ./westergate -enc messageFile keyFile -d 25
+$ ./westergate -enc messageFile songLibrary/keyFile -d 25
 ```
 
 All output from encoding will be stored in a file named `/output/messageFile.enc.txt` 
@@ -31,7 +37,7 @@ All output from encoding will be stored in a file named `/output/messageFile.enc
 #### Decoding
 Decoding a encoded file by running the command:
 ```sh
-$ ./westergate -dec encodedMessageFile keyFile
+$ ./westergate -dec encodedMessageFile songLibrary/keyFile
 ```
 
 All output from decoding will be stored in a file name `/output/encodedMessageFile.dec.txt`

@@ -18,25 +18,20 @@
 #include QUEUE
 #endif
 
-#define SUCCESS 200
-#define FILE_NOT_FOUND 404
-#define DISTANCE_NOT_SATISFIED 500
-
 #define DICTIONARY_PATH "/usr/share/dict/words"
 #define SONG_LIBRARY_PATH "songLibrary/"
 
 char *preprocessKey(const char *inputMessageFile, int *status) {
-    FILE *file = NULL;
+    FILE *file = fopen(inputMessageFile, "r");
+    if (file == NULL) {
+        *status = KEY_FILE_NOT_FOUND;
+        return NULL;
+    }
+
     char *key = (char*) allocate(sizeof(char));
     int reallocValue = 1;
     int count = 0;
     char input;
-
-    file = fopen(inputMessageFile, "r");
-    if (file == NULL) {
-        *status = FILE_NOT_FOUND;
-        return NULL;
-    }
 
     while ((input = (char) fgetc(file)) != EOF) {
         if (reallocValue == count) {
@@ -136,6 +131,11 @@ bool isLetterInKey(char input, char lowerCasedInput, char keyValue, int index, i
 
 char *getEncodedMessage(const char *inputMessageFile, const char* key, int *status, int distance) {
     FILE *file = fopen(inputMessageFile, "r");
+    if (file == NULL) {
+        *status = INPUT_FILE_NOT_FOUND;
+        return NULL;
+    }
+
     char input;
     size_t keySize = strlen(key);
     int lowerLimit = 0;
@@ -148,6 +148,7 @@ char *getEncodedMessage(const char *inputMessageFile, const char* key, int *stat
             char lowerCasedInput = tolower(input);
             bool found = false;
 
+            // search the lower bounds of the array
             for (int i = lowerLimit; i >= 0; i--) {
                 found = isLetterInKey(input, lowerCasedInput, key[i], i, distance, &lowerLimit, &upperLimit, &encodedMessage, &encodedMessageSize);
                 if (found) {
@@ -157,6 +158,7 @@ char *getEncodedMessage(const char *inputMessageFile, const char* key, int *stat
 
             if (found) continue;
 
+            // search the upper bounds of the array
             for (int i = upperLimit; i < keySize; i++) {
                 found = isLetterInKey(input, lowerCasedInput, key[i], i, distance, &lowerLimit, &upperLimit, &encodedMessage, &encodedMessageSize);
                 if (found) {
@@ -181,24 +183,25 @@ char *getEncodedMessage(const char *inputMessageFile, const char* key, int *stat
 
 char *encode(const char *inputMessageFile, const char *keyFile, int *status, int distance) {
     char *key = preprocessKey(keyFile, status);
+    if (key == NULL) {
+        return NULL;
+    }
     char *encoded = getEncodedMessage(inputMessageFile, key, status, distance);
-    printf("%s\n", encoded);
     free(key);
-    free(encoded);
-    return NULL;
+    return encoded;
 }
 
 char *getDecodedMessage(const char *inputCodeFile, const char *key, int *status) {
+    FILE *file = fopen(inputCodeFile, "r");
+    if (file == NULL) {
+        *status = INPUT_FILE_NOT_FOUND;
+        return NULL;
+    }
     char *decodedMessage = allocate(sizeof(char));
     char input;
     int position;
     int reallocValue = 1;
     int count = 0;
-    FILE *file = fopen(inputCodeFile, "r");
-    if (file == NULL) {
-        *status = FILE_NOT_FOUND;
-        return NULL;
-    }
 
     while (true) {
         if (count == reallocValue) {
@@ -226,14 +229,20 @@ char *getDecodedMessage(const char *inputCodeFile, const char *key, int *status)
 
 char *decode(const char *inputCodeFile, const char *keyFile, int *status) {
     char *key = preprocessKey(keyFile, status);
+    if (key == NULL) {
+        return NULL;
+    }
     char *decodedMessage = getDecodedMessage(inputCodeFile, key, status);
     free(key);
-    printf("%s\n", decodedMessage);
-    free(decodedMessage);
-    return NULL;
+    return decodedMessage;
 }
 
 char *hack(const char *inputCodeFile, int *status) {
+    FILE *file = fopen(inputCodeFile, "r");
+    if (file == NULL) {
+        *status = FILE_NOT_FOUND;
+        return NULL;
+    }
     int dictionarySize = 0;
     char **dictionary = getDictionary(&dictionarySize);
 
@@ -244,11 +253,6 @@ char *hack(const char *inputCodeFile, int *status) {
     char *word = NULL;
     int wordLength = 0;
 
-    FILE *file = fopen(inputCodeFile, "r");
-    if (file == NULL) {
-        *status = FILE_NOT_FOUND;
-        return NULL;
-    }
     while (true) {
 
         while (fscanf(file, "[%d]", &position) == 1) {
@@ -304,5 +308,5 @@ char *hack(const char *inputCodeFile, int *status) {
     }
     free(dictionary);
     free(keys);
-    return NULL;
+    return encodedMessage;
 }
