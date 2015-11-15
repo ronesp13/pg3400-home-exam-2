@@ -1,6 +1,6 @@
 # Home Exam 2
 ## Programmering i C for Linux
-###### Espen Rønning & Pia Dokken Stranger Johannessen
+###### Espen Rønning & Pia Dokken Stranger-Johannessen
 
 ### Compilation
 To compile the program use the `Makefile` functionality by running the following command in the terminal.
@@ -11,7 +11,6 @@ $ make
 
 ### Usage
 The program is designed to be a CLI program.
-
 It is assumed that all the keyfiles are located in the folder `songLibrary`.
 
 By default the program writes output to the terminal.

@@ -252,6 +252,7 @@ char **hack(const char *inputCodeFile, int *status, int *size) {
     int *positions = NULL;
     char *word = NULL;
     int wordLength = 0;
+    int reallocValue = 1;
 
     while (true) {
 
@@ -259,13 +260,17 @@ char **hack(const char *inputCodeFile, int *status, int *size) {
             if (wordLength == 0) {
                 positions = (int*) allocate(sizeof(int));
             } else {
-                positions = (int*) reallocate(positions, sizeof(int) * (wordLength + 1));
+                if (wordLength == reallocValue) {
+                    reallocValue *= 2;
+                    positions = (int*) reallocate(positions, sizeof(int) * reallocValue);
+                }
             }
             positions[wordLength] = position;
             wordLength++;
         }
 
         if (wordLength != 0) {
+            positions = (int*) reallocate(positions, sizeof(int) * wordLength);
             Queue possibleKeys = { NULL, NULL};
             while (keys->first != NULL) {
                 char *key = dequeue(keys);
@@ -288,6 +293,7 @@ char **hack(const char *inputCodeFile, int *status, int *size) {
             free(positions);
             positions = NULL;
             wordLength = 0;
+            reallocValue = 1;
         }
         if (fscanf(file, "%c", &input) == EOF) {
             break;
@@ -296,7 +302,7 @@ char **hack(const char *inputCodeFile, int *status, int *size) {
     fclose(file);
 
     char **messages = malloc(sizeof(char*));
-    int reallocValue = 1;
+    reallocValue = 1;
     int keysSize = 0;
 
     while (keys->first != NULL) {
