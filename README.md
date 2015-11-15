@@ -15,40 +15,37 @@ The program is designed to be a CLI program.
 It is assumed that all the keyfiles are located in the folder `songLibrary`.
 
 By default the program writes output to the terminal.
+```sh
+$ ./westergate -enc myMessageFile.txt songLibrary/keyFile.txt
+```
 If you want to store the output to a file, use the > operator.
 ```sh
-$ ./westergate -enc myMessageFile.txt songLibrary/keyFile.txt > myoutputfile.txt
+$ ./westergate -enc myMessageFile.txt songLibrary/keyFile.txt > myoutputfile.txt
 ```
 
 #### Encoding
 Encode a messagefile by running the command:
 ```sh
-$ ./westergate -enc messageFile songLibrary/keyFile
+$ ./westergate -enc messageFile.txt songLibrary/keyFile.txt
 ```
-The above code will result in an encoding that is vulnerable to frequency analysis, therefore, if you want
+The command above will result in an encoding that is vulnerable to frequency analysis, therefore, if you want
 a more secure encoding, specify a `d` value. In the example below 25 is given as an example, you can input your own value. In some cases a file can not be encrypted with a `d` value.
 
 ```sh
-$ ./westergate -enc messageFile songLibrary/keyFile -d 25
+$ ./westergate -enc messageFile.txt songLibrary/keyFile.txt -d 25
 ```
-
-All output from encoding will be stored in a file named `/output/messageFile.enc.txt` 
 
 #### Decoding
-Decoding a encoded file by running the command:
+Decode a encoded file by running the command:
 ```sh
-$ ./westergate -dec encodedMessageFile songLibrary/keyFile
+$ ./westergate -dec encodedMessageFile.txt songLibrary/keyFile.txt
 ```
-
-All output from decoding will be stored in a file name `/output/encodedMessageFile.dec.txt`
 
 #### Hacking
 Hack an encoded file by running the command:
 ```sh
-$ ./westergate -hax encodedMessageFile
+$ ./westergate -hax encodedMessageFile.txt
 ```
-
-All output from hacking will be stored in a file named `output/encodedMessageFile.hax.txt`
 
 ### About the solution
 When "hacking" encoded files I am assuming that all the words in the hidden message must be present in the `/usr/share/dict/words` file.

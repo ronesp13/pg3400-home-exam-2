@@ -237,7 +237,7 @@ char *decode(const char *inputCodeFile, const char *keyFile, int *status) {
     return decodedMessage;
 }
 
-char *hack(const char *inputCodeFile, int *status) {
+char **hack(const char *inputCodeFile, int *status, int *size) {
     FILE *file = fopen(inputCodeFile, "r");
     if (file == NULL) {
         *status = FILE_NOT_FOUND;
@@ -295,18 +295,27 @@ char *hack(const char *inputCodeFile, int *status) {
     }
     fclose(file);
 
+    char **messages = malloc(sizeof(char*));
+    int reallocValue = 1;
+    int keysSize = 0;
+
     while (keys->first != NULL) {
         char *key = dequeue(keys);
         char *encodedMessage = getDecodedMessage(inputCodeFile, key, status);
-        printf("Hacked the message %s\n", encodedMessage);
+        if (reallocValue == keysSize) {
+            reallocValue *= 2;
+            messages = reallocate(messages, sizeof(char*) * reallocValue);
+        }
+        messages[keysSize] = encodedMessage;
+        keysSize++;
         free(key);
-        free(encodedMessage);
     }
+    *size = keysSize;
 
     for (int i = 0; i < dictionarySize; i++) {
         free(dictionary[i]);
     }
     free(dictionary);
     free(keys);
-    return encodedMessage;
+    return messages;
 }

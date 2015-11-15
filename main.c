@@ -41,6 +41,8 @@ int main(int argc, char **argv) {
 
     int status = 0;
     char *output;
+    char **hackedMessages;
+
     if (argc == 4 && strcmp(argv[1], "-enc") == 0) {
         output = encode(argv[2], argv[3], &status, 0);
     } else if (argc == 6 && strcmp(argv[1], "-enc") == 0 && strcmp(argv[4], "-d") == 0) {
@@ -48,7 +50,14 @@ int main(int argc, char **argv) {
     } else if (argc == 4 && strcmp(argv[1], "-dec") == 0) {
         output = decode(argv[2], argv[3], &status);
     } else if (argc == 3 && strcmp(argv[1], "-hax") == 0) {
-        output = hack(argv[2], &status);
+        int size = 0;
+        hackedMessages = hack(argv[2], &status, &size);
+        for (int i = 0; i < size; i++) {
+            printf("Probable message #%d: %s\n\n", i + 1, hackedMessages[i]);
+            free(hackedMessages[i]);
+        }
+        free(hackedMessages);
+        return 0;
     } else if (argc == 2 && strcmp(argv[1], "-h") == 0) {
         printHelp();
         return 0;
